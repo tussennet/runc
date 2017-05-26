@@ -1,5 +1,3 @@
-// +build !solaris,!freebsd
-
 package main
 
 import (
@@ -7,24 +5,14 @@ import (
 	"os"
 	"path/filepath"
 	"syscall"
-	"time"
 
 	"github.com/opencontainers/runc/libcontainer"
 	"github.com/urfave/cli"
-
-	"golang.org/x/sys/unix"
 )
 
 func killContainer(container libcontainer.Container) error {
-	_ = container.Signal(unix.SIGKILL, false)
-	for i := 0; i < 100; i++ {
-		time.Sleep(100 * time.Millisecond)
-		if err := container.Signal(syscall.Signal(0), false); err != nil {
-			destroy(container)
-			return nil
-		}
-	}
-	return fmt.Errorf("container init still running")
+	err := container.Signal(syscall.SIGKILL, true)
+	return err
 }
 
 var deleteCommand = cli.Command{
@@ -76,12 +64,13 @@ status of "ubuntu01" as "stopped" the following will delete resources held for
 		case libcontainer.Stopped:
 			destroy(container)
 		case libcontainer.Created:
-			return killContainer(container)
+			destroy(container)
 		default:
 			if force {
-				return killContainer(container)
+				killContainer(container)
+			} else {
+				return fmt.Errorf("cannot delete container %s that is not stopped: %s\n", id, s)
 			}
-			return fmt.Errorf("cannot delete container %s that is not stopped: %s\n", id, s)
 		}
 
 		return nil
