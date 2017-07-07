@@ -1,4 +1,4 @@
-// +build linux,!gccgo
+// +build linux,!gccgo,!freebsd
 
 package nsenter
 
