@@ -1,3 +1,3 @@
-// +build !linux !cgo
+// +build !linux !cgo !freebsd
 
 package nsenter
