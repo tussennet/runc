@@ -5,8 +5,8 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/opencontainers/runc/libcontainer/configs"
 	"github.com/opencontainers/runc/libcontainer/utils"
+	"github.com/opencontainers/runtime-spec/specs-go"
 )
 
 func newStateTransitionError(from, to containerState) error {
@@ -44,13 +44,13 @@ func destroy(c *freebsdContainer) error {
 
 func runPoststopHooks(c *freebsdContainer) error {
 	if c.config.Hooks != nil {
-		s := configs.HookState{
+		s := specs.State{
 			Version: c.config.Version,
 			ID:      c.id,
 			Bundle:  utils.SearchLabels(c.config.Labels, "bundle"),
 		}
 		for _, hook := range c.config.Hooks.Poststop {
-			if err := hook.Run(s); err != nil {
+			if err := hook.Run(&s); err != nil {
 				return err
 			}
 		}

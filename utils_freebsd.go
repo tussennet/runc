@@ -8,13 +8,14 @@ import (
 	"strconv"
 	"syscall"
 
-	"github.com/Sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	//"github.com/coreos/go-systemd/activation"
+	_ "net/http/pprof"
+
 	"github.com/opencontainers/runc/libcontainer"
 	"github.com/opencontainers/runc/libcontainer/specconv"
 	"github.com/opencontainers/runtime-spec/specs-go"
 	"github.com/urfave/cli"
-	_ "net/http/pprof"
 )
 
 var errEmptyID = errors.New("container id cannot be empty")

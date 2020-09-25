@@ -45,7 +45,8 @@ func CreateLibcontainerConfig(opts *CreateOpts) (*configs.Config, error) {
 		Hostname:     spec.Hostname,
 		Labels:       append(labels, fmt.Sprintf("bundle=%s", cwd)),
 		NoNewKeyring: opts.NoNewKeyring,
-		Rootless:     opts.Rootless,
+		RootlessEUID:     opts.Rootless,
+		RootlessCgroups:  opts.Rootless,
 		Version:      specs.Version,
 	}
 	return config, err

@@ -17,6 +17,7 @@ import (
 
 	"github.com/opencontainers/runc/libcontainer/configs"
 	"github.com/opencontainers/runc/libcontainer/utils"
+	"github.com/opencontainers/runtime-spec/specs-go"
 )
 
 type freebsdContainer struct {
@@ -73,6 +74,12 @@ func (c *freebsdContainer) State() (*State, error) {
 	c.m.Lock()
 	defer c.m.Unlock()
 	return c.currentState()
+}
+
+func (c *freebsdContainer) OCIState() (*specs.State, error) {
+	c.m.Lock()
+	defer c.m.Unlock()
+	return c.currentOCIState()
 }
 
 func (c *freebsdContainer) Config() configs.Config {
@@ -612,7 +619,26 @@ func (c *freebsdContainer) currentState() (*State, error) {
 		},
 		JailId:   c.jailId,
 		DevPart:  c.devPartition,
-		Rootless: c.config.Rootless,
+		Rootless: c.config.RootlessEUID || c.config.RootlessCgroups,
+	}
+	return state, nil
+}
+
+func (c *freebsdContainer) currentOCIState() (*specs.State, error) {
+	bundle, annotations := utils.Annotations(c.config.Labels)
+	state := &specs.State{
+		Version:     specs.Version,
+		ID:          c.ID(),
+		Bundle:      bundle,
+		Annotations: annotations,
+	}
+	status, err := c.currentStatus()
+	if err != nil {
+		return nil, err
+	}
+	state.Status = status.String()
+	if status != Stopped {
+		state.Pid = c.initProcessPid
 	}
 	return state, nil
 }
